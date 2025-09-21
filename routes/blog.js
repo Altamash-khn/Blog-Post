@@ -9,8 +9,36 @@ router.get("/", function (req, res) {
   res.redirect("/posts");
 });
 
-router.get("/posts", function (req, res) {
-  res.render("posts-list");
+router.get("/posts", async function (req, res) {
+  const posts = await db
+    .getDb()
+    .collection("posts")
+    .find({}, { projection: { title: 1, summary: 1, "author.authorName": 1 } })
+    .toArray();
+
+  res.render("posts-list", { posts: posts });
+});
+
+router.get("/posts/:id", async function (req, res) {
+  const id = new ObjectId(req.params.id);
+  const post = await db
+    .getDb()
+    .collection("posts")
+    .findOne({ _id: id }, { summary: 0 });
+
+  if (!post) {
+    return res.status(404).render("404");
+  }
+
+  post.humanReadableDate = post.createdAt.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  post.date = post.createdAt.toISOString();
+  res.render("post-detail", { post: post });
 });
 
 router.get("/new-post", async function (req, res) {
@@ -42,5 +70,6 @@ router.post("/posts", async function (req, res) {
 
   res.redirect("/posts");
 });
+
 
 module.exports = router;
