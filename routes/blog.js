@@ -71,5 +71,9 @@ router.post("/posts", async function (req, res) {
   res.redirect("/posts");
 });
 
+router.post("/posts/:id/delete", async function (req, res) {
+  await db.getDb().collection('posts').deleteOne({_id: new ObjectId(req.params.id)})
+  res.redirect('/posts')
+});
 
 module.exports = router;
