@@ -72,8 +72,44 @@ router.post("/posts", async function (req, res) {
 });
 
 router.post("/posts/:id/delete", async function (req, res) {
-  await db.getDb().collection('posts').deleteOne({_id: new ObjectId(req.params.id)})
-  res.redirect('/posts')
+  await db
+    .getDb()
+    .collection("posts")
+    .deleteOne({ _id: new ObjectId(req.params.id) });
+  res.redirect("/posts");
+});
+
+router.get("/posts/:id/edit", async function (req, res) {
+  const id = new ObjectId(req.params.id);
+  const post = await db
+    .getDb()
+    .collection("posts")
+    .findOne({ _id: id }, { projection: { author: 0, createdAt: 0 } });
+  console.log("post", post);
+
+  if (!post) {
+    return res.status(404).render("404");
+  }
+  res.render("update-post", { post: post });
+});
+
+router.post("/posts/:id/update", async function (req, res) {
+  const id = new ObjectId(req.params.id);
+  await db
+    .getDb()
+    .collection("posts")
+    .updateOne(
+      { _id: id },
+      {
+        $set: {
+          title: req.body.title,
+          summary: req.body.summary,
+          content: req.body.content,
+          createdAt: new Date(),
+        },
+      }
+    );
+  res.redirect("/posts");
 });
 
 module.exports = router;
