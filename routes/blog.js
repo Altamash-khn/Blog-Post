@@ -20,7 +20,13 @@ router.get("/posts", async function (req, res) {
 });
 
 router.get("/posts/:id", async function (req, res) {
-  const id = new ObjectId(req.params.id);
+  let id = req.params.id;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(404).render("404");
+  }
+
+  id = new ObjectId(id);
   const post = await db
     .getDb()
     .collection("posts")
@@ -72,29 +78,47 @@ router.post("/posts", async function (req, res) {
 });
 
 router.post("/posts/:id/delete", async function (req, res) {
+  let id = req.params.id;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(404).render("404");
+  }
   await db
     .getDb()
     .collection("posts")
-    .deleteOne({ _id: new ObjectId(req.params.id) });
+    .deleteOne({ _id: new ObjectId(id) });
   res.redirect("/posts");
 });
 
 router.get("/posts/:id/edit", async function (req, res) {
-  const id = new ObjectId(req.params.id);
+  const idParam = req.params.id;
+
+  if (!ObjectId.isValid(idParam)) {
+    return res.status(404).render("404");
+  }
+
+  const id = new ObjectId(idParam);
   const post = await db
     .getDb()
     .collection("posts")
     .findOne({ _id: id }, { projection: { author: 0, createdAt: 0 } });
-  console.log("post", post);
 
   if (!post) {
     return res.status(404).render("404");
   }
+
+  console.log("post", post);
   res.render("update-post", { post: post });
 });
 
 router.post("/posts/:id/update", async function (req, res) {
-  const id = new ObjectId(req.params.id);
+  const idParam = req.params.id;
+
+  if (!ObjectId.isValid(idParam)) {
+    return res.status(404).render("404");
+  }
+
+  const id = new ObjectId(idParam);
   await db
     .getDb()
     .collection("posts")
@@ -109,6 +133,7 @@ router.post("/posts/:id/update", async function (req, res) {
         },
       }
     );
+
   res.redirect("/posts");
 });
 
