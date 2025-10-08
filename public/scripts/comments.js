@@ -18,18 +18,23 @@ function createList(arr) {
   return ul;
 }
 
-loadCommmentsBtn.addEventListener("click", async function (e) {
+async function fetchComments() {
   const postId = loadCommmentsBtn.dataset.postid;
   const res = await fetch(`/posts/${postId}/comments`);
   const data = await res.json();
-  console.log(data);
-  const listOfComments = await createList(data);
-  console.log(listOfComments);
+  console.log(data.length);
   commentsSection.innerHTML = " ";
-  commentsSection.appendChild(listOfComments);
-});
+  if (data.length > 0) {
+    const listOfComments = createList(data);
+    commentsSection.appendChild(listOfComments);
+  } else {
+    const pTag = document.createElement("p");
+    pTag.textContent = "no comments found, maybe start commenting";
+    commentsSection.append(pTag);
+  }
+}
 
-formElement.addEventListener("submit", async function (e) {
+async function saveComment(e) {
   e.preventDefault();
   const postId = formElement.dataset.postid;
 
@@ -46,4 +51,9 @@ formElement.addEventListener("submit", async function (e) {
     },
     body: JSON.stringify({ title, text }),
   });
-});
+
+  fetchComments();
+}
+
+loadCommmentsBtn.addEventListener("click", fetchComments);
+formElement.addEventListener("submit", saveComment);
