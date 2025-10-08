@@ -53,6 +53,8 @@ async function saveComment(e) {
   });
 
   fetchComments();
+
+  formElement.reset();
 }
 
 loadCommmentsBtn.addEventListener("click", fetchComments);
